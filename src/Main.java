@@ -77,6 +77,7 @@ public class Main {
 
         Scorer scorer = new VinaScorer();
         Engine engine = new GAEngine(scorer);
+        engine.run(population);
 
     }
 
