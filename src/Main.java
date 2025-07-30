@@ -36,7 +36,6 @@ public class Main {
      *   July 2025
      */
 
-
     public static void main(String[] args) {
 
         if (args.length == 0) {
@@ -72,7 +71,6 @@ public class Main {
         Helpers.init();
         // TODO: Write a data init? ... what would a data class look like?
         //     : 4 vs 5 mers, data type, restricted monomers...
-
         ArrayList<Datum> population = new ArrayList<>();
 
         Scorer scorer = new VinaScorer();
