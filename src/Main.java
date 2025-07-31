@@ -69,9 +69,13 @@ public class Main {
         Config.init(args[1]);
         Assertions.init();
         Helpers.init();
+        Data.init();
         // TODO: Write a data init? ... what would a data class look like?
         //     : 4 vs 5 mers, data type, restricted monomers...
-        ArrayList<Datum> population = new ArrayList<>();
+        //ArrayList<Datum> population = new ArrayList<>();
+
+        Data myData = new Data();
+        ArrayList<Datum> population = myData.getData();
 
         Scorer scorer = null;
 

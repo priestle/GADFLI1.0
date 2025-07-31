@@ -10,7 +10,7 @@ public final class Helpers {
     public static String gninaProgram      = "";
 
     public static void init() {
-        try (Scanner inputF = new Scanner(Paths.get(Config.helperConfigFileName))) {
+        try (Scanner inputF = new Scanner(Paths.get(Config.calculationRoot + "/" + Config.helperConfigFileName))) {
             while (inputF.hasNextLine()) {
                 String row = inputF.nextLine();
 

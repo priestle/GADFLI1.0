@@ -10,7 +10,7 @@ public final class Assertions {
 
     public static void init() {
 
-        File logfile = new File(Config.logFileName);
+        File logfile = new File(Config.calculationRoot + "/" + Config.logFileName);
 
         if ("YES".equals(Config.overwriteStatus)) {
             if (logfile.exists()) {
@@ -70,7 +70,7 @@ public final class Assertions {
             System.out.println(logString);
         }
         if (Config.loggingStatus.equals("FILEONLY")) {
-            try (FileWriter outputF = new FileWriter(Config.logFileName, true)) {
+            try (FileWriter outputF = new FileWriter(Config.calculationRoot + "/" + Config.logFileName, true)) {
                 outputF.write(logString + "\n");
             }
             catch (Exception e) {
@@ -79,7 +79,7 @@ public final class Assertions {
         }
         if (Config.loggingStatus.equals("ALL")) {
             System.out.println(logString);
-            try (FileWriter outputF = new FileWriter(Config.logFileName, true)) {
+            try (FileWriter outputF = new FileWriter(Config.calculationRoot + "/" + Config.logFileName, true)) {
                 outputF.write(logString + "\n");
             } catch (Exception e) {
                 e.printStackTrace();
@@ -87,7 +87,7 @@ public final class Assertions {
         }
     }
 
-    public void AssertRunDateTime() {
+    public static void AssertRunDateTime() {
         LocalDateTime currentDateTime;
         currentDateTime = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyy-MM-dd HH:mm:ss");

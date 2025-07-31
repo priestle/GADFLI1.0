@@ -9,7 +9,7 @@ public class ACOEngine extends Engine {
 
     @Override
     public void run(ArrayList<Datum> population) {
-        System.out.println("Running GA Engine...");
+        System.out.println("Running AOC Engine...");
         for (Datum cand : population) {
             double score = scorer.score(cand);
             System.out.printf("  %s scored %.3f\n", cand, score);
