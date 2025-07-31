@@ -73,9 +73,81 @@ public class Main {
         //     : 4 vs 5 mers, data type, restricted monomers...
         ArrayList<Datum> population = new ArrayList<>();
 
-        Scorer scorer = new VinaScorer();
-        Engine engine = new GAEngine(scorer);
-        engine.run(population);
+        Scorer scorer = null;
+
+        switch (Config.modelType.toUpperCase()) {
+
+             case "VINA":
+                 scorer = new VinaScorer();
+                 break;
+
+            case "GNINA":
+                scorer = new GninaScorer();
+                break;
+
+            case "PROPERTY":
+                scorer = new PropertyScorer();
+                break;
+
+            case "SURFACE":
+                scorer = new SurfaceScorer();
+                break;
+
+            case "RANDOM":
+                scorer = new RandomScorer();
+                break;
+
+            case "TEST":
+                scorer = new TestScorer();
+                break;
+
+            default:
+                 Assertions.log("FATAL ERROR : no valid scoring technique chosen.");
+                 System.exit(1);
+         }
+
+        // Scorer scorer = new VinaScorer();
+
+        Engine engine = null;
+
+        switch (Config.engineType.toUpperCase()) {
+
+            case "BEAM":
+                engine = new BeamEngine(scorer);
+                break;
+
+            case "GA":
+                engine = new GAEngine(scorer);
+                break;
+
+            case "ACO":
+                engine = new ACOEngine(scorer);
+                break;
+
+            case "PSO":
+                engine = new PSOEngine(scorer);
+                break;
+
+            case "TABU":
+                engine = new TabuEngine(scorer);
+                break;
+
+            case "SIMANEAL":
+                engine = new SimanealEngine(scorer);
+                break;
+
+            case "RANDOM":
+                engine = new RandomEngine(scorer);
+                break;
+
+            default:
+                Assertions.log("FATAL ERROR : no valid engine chosen.");
+        }
+
+
+        // BEAM/GA/ACO/PSO/TABU/SIMANEAL/RANDOM
+        //Engine engine = new GAEngine(scorer);
+        //engine.run(population);
 
     }
 
