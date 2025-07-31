@@ -147,7 +147,7 @@ public class Main {
 
         // BEAM/GA/ACO/PSO/TABU/SIMANEAL/RANDOM
         //Engine engine = new GAEngine(scorer);
-        //engine.run(population);
+        engine.run(population);
 
     }
 

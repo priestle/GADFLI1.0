@@ -57,7 +57,7 @@ public final class Assertions {
     public static void log(String logString) {
 
         // check logging status
-        Boolean goodLoggingStatus = false;
+        boolean goodLoggingStatus = false;
         if (Config.loggingStatus.equals("ALL"))      { goodLoggingStatus = true; }
         if (Config.loggingStatus.equals("FILEONLY")) { goodLoggingStatus = true; }
         if (Config.loggingStatus.equals("TEXTONLY")) { goodLoggingStatus = true; }
