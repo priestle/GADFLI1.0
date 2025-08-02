@@ -153,6 +153,8 @@ public class Main {
         //Engine engine = new GAEngine(scorer);
         engine.run(population);
 
+        Assertions.log("\nDONE.");
+
     }
 
     private static void printHelp() {
