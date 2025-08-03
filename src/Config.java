@@ -115,27 +115,27 @@ public final class Config {
 
             boolean settingsAreComplete = true;
 
-            if (configFileName.equals(""))                   { settingsAreComplete = false; }
-            if (gadfliVersion.equals(""))                    { settingsAreComplete = false; }
-            if (modelName.equals(""))                        { settingsAreComplete = false; }
-            if (calculationRoot.equals(""))                  { settingsAreComplete = false; }
-            if (debugStatus.equals(""))                      { settingsAreComplete = false; }
-            if (loggingStatus.equals(""))                    { settingsAreComplete = false; }
-            if (overwriteStatus.equals(""))                  { settingsAreComplete = false; }
-            if (archiveFileName.equals(""))                  { settingsAreComplete = false; }
-            if (monomerDefinitionsFilename.equals(""))       { settingsAreComplete = false; }
-            if (sequenceDefinitionsFileName.equals(""))      { settingsAreComplete = false; }
-            if (logFileName.equals(""))                      { settingsAreComplete = false; }
-            if (summaryFileName.equals(""))                  { settingsAreComplete = false; }
-            if (historyFileName.equals(""))                  { settingsAreComplete = false; }
-            if (restartFileName.equals(""))                  { settingsAreComplete = false; }
-            if (molFileDirectoryRootName.equals(""))         { settingsAreComplete = false; }
-            if (engineType.equals(""))                       { settingsAreComplete = false; }
-            if (engineConfigFileName.equals(""))             { settingsAreComplete = false; }
-            if (modelType.equals(""))                        { settingsAreComplete = false; }
-            if (scoringConfigFileName.equals(""))            { settingsAreComplete = false; }
-            if (helperConfigFileName.equals(""))             { settingsAreComplete = false; }
-            if (OSType.isEmpty())                            { settingsAreComplete = false; }
+            if (configFileName.isEmpty())                   { settingsAreComplete = false; }
+            if (gadfliVersion.isEmpty())                    { settingsAreComplete = false; }
+            if (modelName.isEmpty())                        { settingsAreComplete = false; }
+            if (calculationRoot.isEmpty())                  { settingsAreComplete = false; }
+            if (debugStatus.isEmpty())                      { settingsAreComplete = false; }
+            if (loggingStatus.isEmpty())                    { settingsAreComplete = false; }
+            if (overwriteStatus.isEmpty())                  { settingsAreComplete = false; }
+            if (archiveFileName.isEmpty())                  { settingsAreComplete = false; }
+            if (monomerDefinitionsFilename.isEmpty())       { settingsAreComplete = false; }
+            if (sequenceDefinitionsFileName.isEmpty())      { settingsAreComplete = false; }
+            if (logFileName.isEmpty())                      { settingsAreComplete = false; }
+            if (summaryFileName.isEmpty())                  { settingsAreComplete = false; }
+            if (historyFileName.isEmpty())                  { settingsAreComplete = false; }
+            if (restartFileName.isEmpty())                  { settingsAreComplete = false; }
+            if (molFileDirectoryRootName.isEmpty())         { settingsAreComplete = false; }
+            if (engineType.isEmpty())                       { settingsAreComplete = false; }
+            if (engineConfigFileName.isEmpty())             { settingsAreComplete = false; }
+            if (modelType.isEmpty())                        { settingsAreComplete = false; }
+            if (scoringConfigFileName.isEmpty())            { settingsAreComplete = false; }
+            if (helperConfigFileName.isEmpty())             { settingsAreComplete = false; }
+            if (OSType.isEmpty())                           { settingsAreComplete = false; }
 
             if (!settingsAreComplete) {
                 String aS = "CONFIG SETTINGS : \n";

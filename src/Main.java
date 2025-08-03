@@ -90,7 +90,7 @@ public class Main {
                 break;
 
             case "PROPERTY":
-                scorer = new PropertyScorer();
+                scorer = new PropertyScorer(population);
                 break;
 
             case "SURFACE":
@@ -109,8 +109,6 @@ public class Main {
                  Assertions.log("FATAL ERROR : no valid scoring technique chosen.");
                  System.exit(1);
          }
-
-        // Scorer scorer = new VinaScorer();
 
         Engine engine = null;
 
@@ -148,9 +146,6 @@ public class Main {
                 Assertions.log("FATAL ERROR : no valid engine chosen.");
         }
 
-
-        // BEAM/GA/ACO/PSO/TABU/SIMANEAL/RANDOM
-        //Engine engine = new GAEngine(scorer);
         engine.run(population);
 
         Assertions.log("\nDONE.");

@@ -16,6 +16,7 @@ public class GAEngineParameters {
     private double crossoverFrequency = -1.0;
     private int    crossoverStart     = -1;
     private int    crossoverEnd       = -1;
+    private String archiveFileName    = "";
 
     // Constructor
     public GAEngineParameters(String configFileName) {
@@ -67,6 +68,10 @@ public class GAEngineParameters {
                 if (row.contains("CROSSOVER_END")) {
                     this.crossoverEnd = Integer.parseInt(secondString(row));
                 }
+
+                if (row.contains("ARCHIVE_FILENAME")) {
+                    this.archiveFileName = secondString(row);
+                }
             }
         }
         catch (Exception e) {
@@ -76,17 +81,18 @@ public class GAEngineParameters {
 
         // Data check
         boolean allGoodData = true;
-        if (this.generations <= 0)        allGoodData = false;
-        if (this.population < 2)          allGoodData = false;
-        if (this.genes < 1)               allGoodData = false;
-        if (this.mutationFrequency1 < 0 ) allGoodData = false;
-        if (this.mutationFrequency2 < 0)  allGoodData = false;
-        if (this.parentFate.isEmpty())    allGoodData = false;
-        if (this.mutationStart < 0)       allGoodData = false;
-        if (this.mutationEnd < 0)         allGoodData = false;
-        if (this.crossoverFrequency < 0)  allGoodData = false;
-        if (this.crossoverStart < 0)      allGoodData = false;
-        if (this.crossoverEnd < 0)        allGoodData = false;
+        if (this.generations <= 0)           allGoodData = false;
+        if (this.population < 2)             allGoodData = false;
+        if (this.genes < 1)                  allGoodData = false;
+        if (this.mutationFrequency1 < 0 )    allGoodData = false;
+        if (this.mutationFrequency2 < 0)     allGoodData = false;
+        if (this.parentFate.isEmpty())       allGoodData = false;
+        if (this.mutationStart < 0)          allGoodData = false;
+        if (this.mutationEnd < 0)            allGoodData = false;
+        if (this.crossoverFrequency < 0)     allGoodData = false;
+        if (this.crossoverStart < 0)         allGoodData = false;
+        if (this.crossoverEnd < 0)           allGoodData = false;
+        if (this.archiveFileName.isEmpty())  allGoodData = false;
 
         if (!allGoodData) {
             Assertions.log("FATAL ERROR : Good preferences not returned from GA configuration file.");
@@ -107,6 +113,7 @@ public class GAEngineParameters {
     public double getCrossoverFrequency()    { return this.crossoverFrequency; }
     public int    getCrossoverStart()        { return this.crossoverStart;     }
     public int    getCrossoverEnd()          { return this.crossoverEnd;       }
+    public String getArchiveFileName()       { return this.archiveFileName;    }
 
     // Sets
 

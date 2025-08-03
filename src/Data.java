@@ -138,7 +138,7 @@ public class Data {
             }
         }
         catch (Exception e) {
-            Assertions.log("FATEL ERROR : Problem opening scorrer config file.");
+            Assertions.log("FATAL ERROR : Problem opening scorrer config file.");
             Assertions.log("\tSystems attempted to open " + configFileName);
             System.exit(1);
         }
