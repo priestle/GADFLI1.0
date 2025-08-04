@@ -98,6 +98,27 @@ public class GAEngineParameters {
             Assertions.log("FATAL ERROR : Good preferences not returned from GA configuration file.");
             System.exit(1);
         }
+
+        // Now check that the numbers make sense
+        // Also subtract 1 from some of the numbers... we're not going to beat the users up
+        // with 0-based vs 1-based arrays...
+        if (mutationStart >= mutationEnd) {
+            Assertions.log("ERROR : mutation ranges don't make sense.");
+        }
+        if (crossoverStart >= crossoverEnd) {
+            Assertions.log("ERROR : crossover ranges don't make sense.");
+        }
+        if (mutationEnd > population) {
+            Assertions.log("ERROR : MutationEnd goes beyond population.");
+        }
+        if (crossoverEnd > population) {
+            Assertions.log("ERROR : CrossoverEnd goes beyond population.");
+        }
+        // Move 1-based things to 0-based things
+        mutationStart  = mutationStart - 1;
+        mutationEnd    = mutationEnd - 1;
+        crossoverStart = crossoverStart - 1;
+        crossoverEnd   = crossoverEnd - 1;
     }
 
     // Gets

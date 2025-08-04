@@ -46,8 +46,13 @@ public class GAEngine extends Engine {
             int c = random.nextInt(numberOfMonomers) + 1;
             int d = random.nextInt(numberOfMonomers) + 1;
             int e = 0;
-            double score = scorer.score(a, b, c, d, e);
-            Datum aChromosome = new Datum(a, b, c, d, e, score, 0.00, "-----");
+            int npfrA = monomerDefs.getNPFRMonomerNumber(a);
+            int npfrB = monomerDefs.getNPFRMonomerNumber(b);
+            int npfrC = monomerDefs.getNPFRMonomerNumber(c);
+            int npfrD = monomerDefs.getNPFRMonomerNumber(d);
+            int npfrE = 0;
+            double score = scorer.score(npfrA, npfrB, npfrC, npfrD, npfrE);
+            Datum aChromosome = new Datum(npfrA, npfrB, npfrC, npfrD, npfrE, score, 0.00, "-----");
             chromosomes.add(aChromosome);
         }
 
@@ -59,42 +64,49 @@ public class GAEngine extends Engine {
         }
 
         // Archive/Output initial population
-        ArrayList<Datum> archive = new ArrayList<>();
+        ArrayList<Datum> initialSetToArchive = new ArrayList<>();
+        ArrayList<Datum> completeArchiveSet  = new ArrayList<>();
+
         for (int i = 0; i < chromosomes.size(); i++) {
-            if (!archive.contains(chromosomes.get(i))) {
-                archive.add(chromosomes.get(i));
+            if (!initialSetToArchive.contains(chromosomes.get(i))) {
+                initialSetToArchive.add(chromosomes.get(i));
+                completeArchiveSet.add(chromosomes.get(i));
             }
         }
         String archiveFileName = Config.calculationRoot + "/" + engineParameters.getArchiveFileName();
-        FileArchive(archiveFileName, chromosomes, generation);
-
-        // todo: a method to Assert the current population to the log files
-
+        FileArchive(archiveFileName, initialSetToArchive);
 
         // While end condition not met
+        while (generation < engineParameters.getGenerations()) {
 
             // Mutate population
 
             // Crossover population
 
             // Score population
-
                 // Does score already exist?
-
                 // Calculate new score
-
-                // Archive new results
 
             // Rank population
 
+            // Trim population if necessary
+
+            // Archive new results
+
             // Output diagnostic results
+
+            generation++;
+        }
     }
 
     // Methods
-    public void FileArchive(String archiveFileName, ArrayList<Datum> additions, int generation) {
+    public void FileArchive(String archiveFileName, ArrayList<Datum> additions) {
 
         try (FileWriter outputF = new FileWriter(archiveFileName, true)) {
-
+            for (int i = 0; i < additions.size(); i++) {
+                String aS = additions.get(i).toCSV() + ",";
+                outputF.write(aS + "\n");
+            }
         }
         catch (Exception e) {
             Assertions.log("FATAL ERROR : Cannot append calculation archive file.");

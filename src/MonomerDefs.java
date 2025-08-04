@@ -28,8 +28,9 @@ public class MonomerDefs {
     }
 
     // Gets
+    // So that index-1 is in there because the array is zero based
     public int getNPFRMonomerNumber(int index) {
-        return monomerList.get(index);
+        return monomerList.get(index-1);
     }
 
     public int getIndexFromNPFRNumber(int npfrMonomer) {

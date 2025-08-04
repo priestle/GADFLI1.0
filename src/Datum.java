@@ -24,4 +24,10 @@ public class Datum {
                 this.score, this.rank, this.type
         );
     }
+
+    public String toCSV() {
+        String aS = this.a + "," + this.b + "," + this.c + "," + this.d + "," + this.e + "," +
+                    this.score + "," + this.rank + "," + this.type;
+        return aS;
+    }
 }
