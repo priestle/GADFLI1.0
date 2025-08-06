@@ -80,7 +80,6 @@ public class Data {
         Assertions.log("MODEL TYPE " + Config.modelType);
         Assertions.log("ENGINE " + Config.engineType);
         Assertions.AssertRunDateTime();
-        Assertions.log("\n\n");
 
         Assertions.log("Bringing property data into the system...");
 
@@ -183,6 +182,8 @@ public class Data {
 
         data.sort(Comparator.comparing(d -> d.score));
 
+        // todo: somehow this rank data isn't making it to the engines. Need to create a data structure for the important parts
+        //       such as 0.1% threshold etc.
         for (int i = 0; i < data.size(); i++) {
             double rank = (double)i / data.size();
             data.get(i).rank = rank;
