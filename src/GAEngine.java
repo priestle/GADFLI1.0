@@ -40,7 +40,6 @@ public class GAEngine extends Engine {
         int generation = 0;
 
         ArrayList<Datum> chromosomes = new ArrayList<>();
-        Random random = new Random();
         for (int i = 0; i < engineParameters.getPopulation(); i++) {
             Datum aChromosome = randomNewChromosome(monomerDefs);
             chromosomes.add(aChromosome);
@@ -49,15 +48,97 @@ public class GAEngine extends Engine {
         // Rank initial population
         chromosomes.sort(Comparator.comparingDouble(d -> d.score));
 
-        Assertions.log("\nINITIAL POPULATION");
-        for (int i = 0; i < chromosomes.size(); i++) {
-            Assertions.log(chromosomes.get(i).toString());
-        }
-        Assertions.log("_________________________________________________________________");
-        Assertions.log("\n");
-
+        // Output population
         outputPopulation("GENERATION " + generation, chromosomes, engineParameters.getPopulation());
 
+        // Archive initial population
+        ArrayList<Datum> archive = new ArrayList<>();
+        for (int i = 0; i < chromosomes.size(); i++) {
+            archive.add(chromosomes.get(i));
+        }
+
+        // MAIN ITERATIVE GENETIC EVOLUTION
+        while (generation < engineParameters.getGenerations()) {
+
+            generation++;
+
+            // Mutate chromosomes
+            ArrayList<Datum> mutants = mutate(chromosomes);
+
+            // Crossover chromosomes
+            ArrayList<Datum> children = crossover(mutants);
+
+            // Calculate new scores
+            // todo: there should be something in here that short circuits recalculating a score
+            for (int i = 0; i < children.size(); i++) {
+                Datum test = children.get(i);
+                try {
+                    test.score = scorer.score(test.a, test.b, test.c, test.d, test.e);
+                }
+                catch (Exception e) {
+                    Assertions.log("No score found for [" + test.a + "," + test.b + "," +
+                            test.c + "," + test.d + "," + test.e + "]; assigning 1E10");
+                }
+                Datum result = new Datum(test.a, test.b, test.c, test.d, test.e, test.score, 0.00, "-----");
+                children.set(i, result);
+            }
+
+            // Update the population
+            switch (engineParameters.getParentFate()) {
+                case "KILL": {
+                    // All parents will be replaced with children
+                    chromosomes.clear();
+                    for (int i = 0; i < children.size(); i++) {
+                        chromosomes.add(children.get(i));
+                    }
+                    break;
+                }
+                case "KEEP": {
+                    // Parents and children will be mixed, the best will be kept, don't add duplicates
+                    System.out.println("COMPETING PARENTS AND CHILDREN");
+                    ArrayList<Datum> combined = new ArrayList<>();
+                    for (int i = 0; i < chromosomes.size(); i++) {
+                        combined.add(chromosomes.get(i));
+                    }
+                    for (int i = 0; i < children.size(); i++) {
+                        boolean isInPopulation = false;
+                        Datum test = children.get(i);
+                        for (int j = 0; j < combined.size(); j++) {
+                            Datum current = combined.get(j);
+                            if (    (test.a == current.a) &&
+                                    (test.b == current.b) &&
+                                    (test.c == current.c) &&
+                                    (test.d == current.d) &&
+                                    (test.e == current.e)
+                            ) {
+                                isInPopulation = true;
+                                break;
+                            }
+                        }
+                        if (!isInPopulation) {
+                            combined.add(children.get(i));
+                        }
+                    }
+                    combined.sort(Comparator.comparingDouble(d -> d.score));
+                    chromosomes.clear();
+                    for (int i = 0; i < engineParameters.getPopulation(); i++) {
+                        chromosomes.add(combined.get(i));
+                    }
+                    break;
+                }
+                default: {
+                    Assertions.log("FATAL ERROR : GA ENGINE partent fate not set correctly in config.");
+                    System.exit(1);
+                }
+            }
+
+            // Introduce immigrants
+            // todo: introduce immigrants
+
+            // Output new population
+            outputPopulation("GENERATION " + generation, chromosomes, engineParameters.getPopulation());
+        }
+        // END OF ITERATIVE GENETIC EVOLUTION
 
     }
 
@@ -85,7 +166,6 @@ public class GAEngine extends Engine {
             Assertions.log("WARNING : No score calculated for [" + npfrA + "," + npfrB + "," + npfrC +
                     "," + npfrD + "," + npfrE + "]; Assigning 1e10 as score.");
         }
-        System.out.println(npfrA + " " + npfrB + " " + npfrC + " " + npfrD + " " + npfrE);
         Datum aChromosome = new Datum(npfrA, npfrB, npfrC, npfrD, npfrE, score, 0.00, "-----");
         return aChromosome;
     }
@@ -113,64 +193,28 @@ public class GAEngine extends Engine {
             Assertions.log("FATAL ERROR : Cannot append calculation archive file.");
             System.exit(1);
         }
-
-
-
-
-
     }
 
     // *****************************************************************************************************************
     public ArrayList<Datum> mutate(ArrayList<Datum> individuals) {
-        return individuals;
+
+        ArrayList<Datum> result = new ArrayList<>();
+        for (int i = 0; i < individuals.size(); i++) {
+            result.add(individuals.get(i));
+        }
+        return result;
     }
 
     // *****************************************************************************************************************
     public ArrayList<Datum> crossover(ArrayList<Datum> individuals) {
-        return individuals;
-    }
 
-    // *****************************************************************************************************************
-    public boolean scoreExists(ArrayList<Datum> chrom, int a, int b, int c, int d, int e) {
-
-        boolean isInList = false;
-
-        for (int i = 0; i < chrom.size(); i++) {
-            Datum test = chrom.get(i);
-            if ((test.a == a) && (test.b == b) && (test.c == c) && (test.d == d) && (test.e ==e)) {
-                isInList = true;
-                break;
-            }
+        ArrayList<Datum> result = new ArrayList<>();
+        for (int i = 0; i < individuals.size(); i++) {
+            result.add(individuals.get(i));
         }
-
-        return isInList;
+        return result;
     }
 
-    // *****************************************************************************************************************
-    public double retrieveScore(ArrayList<Datum> chrom, int a, int b, int c, int d, int e) {
-
-        for (int i = 0; i < chrom.size(); i++) {
-            Datum test = chrom.get(i);
-            if ((test.a == a) && (test.b == b) && (test.c == c) && (test.d == d) && (test.e ==e)) {
-                return test.score;
-            }
-        }
-        return 1E10;
-    }
-
-    // *****************************************************************************************************************
-    public boolean notInArray(ArrayList<Datum> chrom, Datum entry) {
-
-        boolean isInArray = false;
-
-        for (int i = 0; i < chrom.size(); i++) {
-            Datum test = chrom.get(i);
-            if ((test.a == entry.a) && (test.b == entry.b) && (test.c == entry.c) && (test.d == entry.d) && (test.e == entry.e)) {
-                isInArray = true;
-            }
-        }
-        return isInArray;
-    }
 }
 
 
