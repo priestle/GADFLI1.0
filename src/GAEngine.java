@@ -1,12 +1,7 @@
-import com.sun.source.tree.AssertTree;
-
-import java.io.File;
 import java.io.FileWriter;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Random;
-import java.util.Scanner;
 
 public class GAEngine extends Engine {
     private final Scorer scorer;
@@ -24,11 +19,6 @@ public class GAEngine extends Engine {
 
         Assertions.log("Retrieving monomer definitions...");
         MonomerDefs monomerDefs = new MonomerDefs(Config.calculationRoot + "/" + Config.monomerDefinitionsFilename);
-
-        if (Config.modelType.equals("NPFR")) {
-            // todo: read in the sequence definition file to translate to NPFR numbers...
-            // todo: this isn't needed by the other model types...
-        }
 
         Assertions.log("\n");
         Assertions.AssertRunDateTime();
@@ -56,6 +46,7 @@ public class GAEngine extends Engine {
         for (int i = 0; i < chromosomes.size(); i++) {
             archive.add(chromosomes.get(i));
         }
+        FileArchive(Config.archiveFileName, archive);
 
         // MAIN ITERATIVE GENETIC EVOLUTION
         while (generation < engineParameters.getGenerations()) {
@@ -63,10 +54,10 @@ public class GAEngine extends Engine {
             generation++;
 
             // Mutate chromosomes
-            ArrayList<Datum> mutants = mutate(chromosomes);
+            ArrayList<Datum> mutants = mutate(chromosomes, engineParameters, monomerDefs);
 
             // Crossover chromosomes
-            ArrayList<Datum> children = crossover(mutants);
+            ArrayList<Datum> children = crossover(mutants, engineParameters, monomerDefs);
 
             // Calculate new scores
             // todo: there should be something in here that short circuits recalculating a score
@@ -95,8 +86,8 @@ public class GAEngine extends Engine {
                 }
                 case "KEEP": {
                     // Parents and children will be mixed, the best will be kept, don't add duplicates
-                    System.out.println("COMPETING PARENTS AND CHILDREN");
                     ArrayList<Datum> combined = new ArrayList<>();
+                    ArrayList<Datum> toArchive = new ArrayList<>();
                     for (int i = 0; i < chromosomes.size(); i++) {
                         combined.add(chromosomes.get(i));
                     }
@@ -117,6 +108,7 @@ public class GAEngine extends Engine {
                         }
                         if (!isInPopulation) {
                             combined.add(children.get(i));
+                            toArchive.add(children.get(i));
                         }
                     }
                     combined.sort(Comparator.comparingDouble(d -> d.score));
@@ -124,6 +116,7 @@ public class GAEngine extends Engine {
                     for (int i = 0; i < engineParameters.getPopulation(); i++) {
                         chromosomes.add(combined.get(i));
                     }
+                    FileArchive(Config.archiveFileName, toArchive);
                     break;
                 }
                 default: {
@@ -133,7 +126,10 @@ public class GAEngine extends Engine {
             }
 
             // Introduce immigrants
-            // todo: introduce immigrants
+            for (int i = engineParameters.getPopulation()-engineParameters.getImmigrantNumber();
+                 i < engineParameters.getPopulation();
+                 i++) { chromosomes.set(i, randomNewChromosome(monomerDefs)); }
+
 
             // Output new population
             outputPopulation("GENERATION " + generation, chromosomes, engineParameters.getPopulation());
@@ -178,6 +174,7 @@ public class GAEngine extends Engine {
         }
         Assertions.log("_________________________________________________________________");
         Assertions.log("\n");
+
     }
 
     // *****************************************************************************************************************
@@ -196,23 +193,193 @@ public class GAEngine extends Engine {
     }
 
     // *****************************************************************************************************************
-    public ArrayList<Datum> mutate(ArrayList<Datum> individuals) {
+    public ArrayList<Datum> mutate(ArrayList<Datum> individuals,
+                                   GAEngineParameters engineParameters,
+                                   MonomerDefs monomerDefs) {
 
         ArrayList<Datum> result = new ArrayList<>();
-        for (int i = 0; i < individuals.size(); i++) {
-            result.add(individuals.get(i));
-        }
+        Random random = new Random();
+
+        switch (engineParameters.getMutationMethod()) {
+
+            case "RANDOM": {
+                for (int i = engineParameters.getMutationStart()-1; i < engineParameters.getMutationEnd()-1; i++) {
+                    for (int gene = 0; gene < engineParameters.getGenes(); gene++) {
+                        if (random.nextDouble() < engineParameters.getMutationFrequency1()) {
+                            Datum chromosome = individuals.get(i);
+                            // Get monomer number
+                            int newMonomer = random.nextInt(monomerDefs.getSize()) + 1; // Don't want to get 0 as a number
+                            int newNPFRNumber = monomerDefs.getNPFRMonomerNumber(newMonomer);
+                            // Ooof, the next part is what you get for not making the data structure an array.
+                            // Might want to make this a function?
+                            switch (gene) {
+                                case 0: {
+                                    chromosome.a = newNPFRNumber;
+                                    break;
+                                }
+                                case 1: {
+                                    chromosome.b = newNPFRNumber;
+                                    break;
+                                }
+                                case 2: {
+                                    chromosome.c = newNPFRNumber;
+                                    break;
+                                }
+                                case 3: {
+                                    chromosome.d = newNPFRNumber;
+                                    break;
+                                }
+                                case 4: {
+                                    chromosome.e = 0; // Still only working with a max of four genes for the NPFR Library
+                                    break;
+                                }
+                                default: {
+                                    Assertions.log("FATAL ERROR : Sketchy gene number in mutate function of the GA Engine.");
+                                    System.exit(1);
+                                }
+                            } // end of switch
+                            // Meh, I can live with that for now.
+                            individuals.set(i, chromosome);
+                        }
+                    }
+                }
+                // You have to update the return array :)
+                result.addAll(individuals);
+                break;
+            }
+
+            case "SIMILARITY": {
+                for (int i = engineParameters.getMutationStart()-1; i < engineParameters.getMutationEnd()-1; i++) {
+                    for (int gene = 0; gene < engineParameters.getGenes(); gene++) {
+                        Double rDouble = random.nextDouble(); // We're only generating the random number once because we don't want
+                                                              // the chance of skipping two monomers to be, for example, 0.05 * 0.02...
+                        if (rDouble < engineParameters.getMutationFrequency1()) {
+                            Datum chromosome = individuals.get(i);
+                            // Assertions.log(chromosome.toString()); // DEBUG
+
+                            // Are we going to offset by 1 or by 2 or -1 or -2?
+                            int offset = 1;
+                            if (random.nextDouble() < engineParameters.getMutationFrequency2()) { offset = 2; }
+                            if (random.nextDouble() < 0.50) { offset = offset * -1; }
+                            // Assertions.log("Chromosome " + i + " : gene " + gene + " : offset " + offset); // DEBUG
+
+                            // What is the current index number of the NPFR number at that chromosome/gene
+                            int currentNPFRNumber = -1;
+                            switch (gene) {
+                                case 0: { currentNPFRNumber = chromosome.a; break; }
+                                case 1: { currentNPFRNumber = chromosome.b; break; }
+                                case 2: { currentNPFRNumber = chromosome.c; break; }
+                                case 3: { currentNPFRNumber = chromosome.d; break; }
+                                case 4: { currentNPFRNumber = chromosome.e; break; }
+                            }
+
+                            // What is the index number in the monomer defs for that NPFR number
+                            int currentIndex = monomerDefs.getIndexFromNPFRNumber(currentNPFRNumber);
+                            // That number is zero-based...
+                            //Assertions.log("Current NPFR number : " + currentNPFRNumber + " at index " + currentIndex + " in monomer defs."); // DEBUG
+
+                            // Apply offset to index
+                            currentIndex = currentIndex + offset; // yeah, making sure the next bit isn't fucked up
+
+                            // Bounds checking... just going to roll it back in
+                            if (currentIndex < 0) { currentIndex = 0; }
+                            if (currentIndex > monomerDefs.getSize()-1) { currentIndex = monomerDefs.getSize()-1; }
+
+                            // get the new NPFR number
+                            int newNPFRNumber = -1;          // semaphore for shenanigans
+                            newNPFRNumber = monomerDefs.getNPFRMonomerNumber(currentIndex+1);
+                           //Assertions.log("New NPFR number : " + newNPFRNumber);  // DEBUG
+
+                            // Ooof, the next part is what you get for not making the data structure an array.
+                            // Might want to make this a function?
+                            switch (gene) {
+                                case 0: {
+                                    chromosome.a = newNPFRNumber;
+                                    break;
+                                }
+                                case 1: {
+                                    chromosome.b = newNPFRNumber;
+                                    break;
+                                }
+                                case 2: {
+                                    chromosome.c = newNPFRNumber;
+                                    break;
+                                }
+                                case 3: {
+                                    chromosome.d = newNPFRNumber;
+                                    break;
+                                }
+                                case 4: {
+                                    chromosome.e = 0; // Still only working with a max of four genes for the NPFR Library
+                                    break;
+                                }
+                                default: {
+                                    Assertions.log("FATAL ERROR : Sketchy gene number in mutate function of the GA Engine.");
+                                    System.exit(1);
+                                }
+                            } // end of switch
+                            // Meh, I can live with that for now.
+                            individuals.set(i, chromosome);
+                           //  Assertions.log(chromosome.toString() + "\n");  // DEBUG
+                        }
+                    }
+                }
+                // You have to update the return array :)
+                result.addAll(individuals);
+                break;
+            }
+
+            default: {
+                Assertions.log("FATAL ERROR : Something wrong with definition of mutation method.");
+                System.exit(1);
+            }
+
+        } // end of method choice switch
+
         return result;
     }
 
     // *****************************************************************************************************************
-    public ArrayList<Datum> crossover(ArrayList<Datum> individuals) {
+    public ArrayList<Datum> crossover(ArrayList<Datum> individuals,
+                                      GAEngineParameters engineParameters,
+                                      MonomerDefs monomerDefs) {
 
-        ArrayList<Datum> result = new ArrayList<>();
-        for (int i = 0; i < individuals.size(); i++) {
-            result.add(individuals.get(i));
+        Random random = new Random();
+
+        for (int i = engineParameters.getCrossoverStart(); i < engineParameters.getCrossoverEnd(); i = i + 2) {
+
+            if (random.nextDouble() < engineParameters.getCrossoverFrequency()) {
+                int crossOverPoint = random.nextInt(3);
+
+                // OK, this bit is going to look really cludgy because we used letters for the chromosomes
+                // Might want to switch to arrays in a rewrite
+                // It's also problematic for mutatbility and deep/shallow copy issues. Thanks Java!
+
+                Datum ch1 = individuals.get(i);
+                Datum ch2 = individuals.get(i+1);
+
+                switch (crossOverPoint) {
+
+                    case 0: { int a = ch1.a; ch1.a = ch2.a; ch2.a = a; break; }
+
+                    case 1: {
+                        int a = ch1.a; ch1.a = ch2.a; ch2.a = a;
+                        int b = ch1.b; ch1.b = ch2.b; ch2.b = b; break;
+                    }
+
+                    case 2: { int d = ch1.d; ch1.d = ch2.d; ch2.d = d; break;
+                    }
+
+                    default: { Assertions.log("FATAL ERROR : in GA crossover routine. It should not be possible to get here."); }
+
+                } // End of switch on crossOverPoint
+
+                individuals.set(i, ch1);
+                individuals.set(i+1, ch2);
+            }
         }
-        return result;
+
+        return individuals;
     }
 
 }

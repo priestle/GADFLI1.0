@@ -16,6 +16,7 @@ public class GAEngineParameters {
     private double crossoverFrequency = -1.0;
     private int    crossoverStart     = -1;
     private int    crossoverEnd       = -1;
+    private int    immigrantNumber    = -1;
     private String archiveFileName    = "";
 
     // Constructor
@@ -45,6 +46,10 @@ public class GAEngineParameters {
                     this.mutationFrequency2 = Double.parseDouble(secondString(row));
                 }
 
+                if (row.contains("MUTATION_METHOD")) {
+                    this.mutationMethod = secondString(row);
+                }
+
                 if (row.contains("PARENT_FATE")) {
                     this.parentFate = secondString(row);
                 }
@@ -69,6 +74,10 @@ public class GAEngineParameters {
                     this.crossoverEnd = Integer.parseInt(secondString(row));
                 }
 
+                if (row.contains("IMMIGRANT_NUMBER")) {
+                    this.immigrantNumber = Integer.parseInt((secondString(row)));
+                }
+
                 if (row.contains("ARCHIVE_FILENAME")) {
                     this.archiveFileName = secondString(row);
                 }
@@ -87,11 +96,13 @@ public class GAEngineParameters {
         if (this.mutationFrequency1 < 0 )    allGoodData = false;
         if (this.mutationFrequency2 < 0)     allGoodData = false;
         if (this.parentFate.isEmpty())       allGoodData = false;
+        if (this.mutationMethod.isEmpty())   allGoodData = false;
         if (this.mutationStart < 0)          allGoodData = false;
         if (this.mutationEnd < 0)            allGoodData = false;
         if (this.crossoverFrequency < 0)     allGoodData = false;
         if (this.crossoverStart < 0)         allGoodData = false;
         if (this.crossoverEnd < 0)           allGoodData = false;
+        if (this.immigrantNumber < 0)        allGoodData = false;
         if (this.archiveFileName.isEmpty())  allGoodData = false;
 
         if (!allGoodData) {
@@ -114,11 +125,12 @@ public class GAEngineParameters {
         if (crossoverEnd > population) {
             Assertions.log("ERROR : CrossoverEnd goes beyond population.");
         }
-        // Move 1-based things to 0-based things
-        mutationStart  = mutationStart - 1;
-        mutationEnd    = mutationEnd - 1;
-        crossoverStart = crossoverStart - 1;
-        crossoverEnd   = crossoverEnd - 1;
+        // Move 1-based things to 0-based things: because humans use normal numbers :(
+        mutationStart   = mutationStart - 1;
+        mutationEnd     = mutationEnd - 1;
+        crossoverStart  = crossoverStart - 1;
+        crossoverEnd    = crossoverEnd - 1;
+        immigrantNumber = immigrantNumber - 1;
     }
 
     // Gets
@@ -134,6 +146,7 @@ public class GAEngineParameters {
     public double getCrossoverFrequency()    { return this.crossoverFrequency; }
     public int    getCrossoverStart()        { return this.crossoverStart;     }
     public int    getCrossoverEnd()          { return this.crossoverEnd;       }
+    public int    getImmigrantNumber()       { return this.immigrantNumber;    }
     public String getArchiveFileName()       { return this.archiveFileName;    }
 
     // Sets
