@@ -36,6 +36,8 @@ public class Main {
      *   July 2025
      */
 
+    // todo: there should only be one archive file name, only declared in the main config file...
+
     public static void main(String[] args) {
 
         if (args.length == 0) {
@@ -76,6 +78,7 @@ public class Main {
 
         Data myData = new Data();
         ArrayList<Datum> population = myData.getData();
+        PropertyDataMetrics.init(population);         // once, at startup
 
         Scorer scorer = null;
 
@@ -147,6 +150,8 @@ public class Main {
         }
 
         engine.run(population);
+
+        Analysis.run();
 
         Assertions.log("\nDONE.");
 

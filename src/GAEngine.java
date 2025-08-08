@@ -42,7 +42,10 @@ public class GAEngine extends Engine {
         outputPopulation("GENERATION " + generation, chromosomes, engineParameters.getPopulation());
 
         // Archive initial population
-        ArrayList<Datum> archive = new ArrayList<>();
+
+        ArrayList<Datum> archive = new ArrayList<>();        // A single list of calculated values; may contain
+                                                             // duplicates; analysis will be after run completion,
+                                                             // Data will be checkpointed every so often.
         for (int i = 0; i < chromosomes.size(); i++) {
             archive.add(chromosomes.get(i));
         }
@@ -60,7 +63,7 @@ public class GAEngine extends Engine {
             ArrayList<Datum> children = crossover(mutants, engineParameters, monomerDefs);
 
             // Calculate new scores
-            // todo: there should be something in here that short circuits recalculating a score
+            // todo: there should be something in here that short circuits recalculating a score... especially for Vina
             for (int i = 0; i < children.size(); i++) {
                 Datum test = children.get(i);
                 try {
@@ -72,6 +75,7 @@ public class GAEngine extends Engine {
                 }
                 Datum result = new Datum(test.a, test.b, test.c, test.d, test.e, test.score, 0.00, "-----");
                 children.set(i, result);
+                archive.add(result);
             }
 
             // Update the population
@@ -87,7 +91,6 @@ public class GAEngine extends Engine {
                 case "KEEP": {
                     // Parents and children will be mixed, the best will be kept, don't add duplicates
                     ArrayList<Datum> combined = new ArrayList<>();
-                    ArrayList<Datum> toArchive = new ArrayList<>();
                     for (int i = 0; i < chromosomes.size(); i++) {
                         combined.add(chromosomes.get(i));
                     }
@@ -96,7 +99,7 @@ public class GAEngine extends Engine {
                         Datum test = children.get(i);
                         for (int j = 0; j < combined.size(); j++) {
                             Datum current = combined.get(j);
-                            if (    (test.a == current.a) &&
+                            if ((test.a == current.a) &&
                                     (test.b == current.b) &&
                                     (test.c == current.c) &&
                                     (test.d == current.d) &&
@@ -108,7 +111,6 @@ public class GAEngine extends Engine {
                         }
                         if (!isInPopulation) {
                             combined.add(children.get(i));
-                            toArchive.add(children.get(i));
                         }
                     }
                     combined.sort(Comparator.comparingDouble(d -> d.score));
@@ -116,11 +118,10 @@ public class GAEngine extends Engine {
                     for (int i = 0; i < engineParameters.getPopulation(); i++) {
                         chromosomes.add(combined.get(i));
                     }
-                    FileArchive(Config.archiveFileName, toArchive);
                     break;
                 }
                 default: {
-                    Assertions.log("FATAL ERROR : GA ENGINE partent fate not set correctly in config.");
+                    Assertions.log("FATAL ERROR : GA ENGINE parent fate not set correctly in config.");
                     System.exit(1);
                 }
             }
@@ -133,7 +134,11 @@ public class GAEngine extends Engine {
 
             // Output new population
             outputPopulation("GENERATION " + generation, chromosomes, engineParameters.getPopulation());
+
+            // Checkpoint the archive
+            FileArchive(Config.calculationRoot + "/" + engineParameters.getArchiveFileName(), archive);
         }
+
         // END OF ITERATIVE GENETIC EVOLUTION
 
     }
@@ -169,7 +174,9 @@ public class GAEngine extends Engine {
     // *****************************************************************************************************************
     private void outputPopulation(String message, ArrayList<Datum> chromosomes, int numberToPrint) {
         Assertions.log(message);
-        for (int i = 0; i < chromosomes.size(); i++) {
+        int max = 25;
+        if (chromosomes.size() < max) { max = chromosomes.size(); }
+        for (int i = 0; i < max; i++) {
             Assertions.log(chromosomes.get(i).toString());
         }
         Assertions.log("_________________________________________________________________");
@@ -178,16 +185,16 @@ public class GAEngine extends Engine {
     }
 
     // *****************************************************************************************************************
-    public void FileArchive(String archiveFileName, ArrayList<Datum> additions) {
+    public void FileArchive(String archiveFileName, ArrayList<Datum> archive) {
 
-        try (FileWriter outputF = new FileWriter(archiveFileName, true)) {
-            for (int i = 0; i < additions.size(); i++) {
-                String aS = additions.get(i).toCSV() + ",";
+        try (FileWriter outputF = new FileWriter(archiveFileName)) {
+            for (int i = 0; i < archive.size(); i++) {
+                String aS = archive.get(i).toCSV() + ",";
                 outputF.write(aS + "\n");
             }
         }
         catch (Exception e) {
-            Assertions.log("FATAL ERROR : Cannot append calculation archive file.");
+            Assertions.log("FATAL ERROR : Calculation archive file.");
             System.exit(1);
         }
     }
